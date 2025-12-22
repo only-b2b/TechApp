@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "TechApp",
+    "slug": "techapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "plugins": [
+      ["expo-notifications"]
+    ],
+    "notification": {
+      "icon": "./assets/notification-icon.png"
+    },
+    "android": {
+      "package": "com.onlyb2b.motors.tech",
+      "googleServicesFile": "./android/app/google-services.json"
+    }
+  }
+}
