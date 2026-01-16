@@ -1,4 +1,3 @@
-// screens/CategoryDetailsScreen.js
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -9,6 +8,7 @@ import {
   Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function CategoryDetailsScreen({ route, navigation }) {
   const { language, phone, email, fullName, category, area } = route.params;
@@ -23,7 +23,7 @@ export default function CategoryDetailsScreen({ route, navigation }) {
     fadeAnim.setValue(0);
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 350,
+      duration: 300,
       useNativeDriver: true,
     }).start();
   }
@@ -60,7 +60,10 @@ export default function CategoryDetailsScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+       colors={["#f3b91aff", "#ee8941ff", "#e67d05ff"]}
+      style={styles.container}
+    >
       <Text style={styles.title}>
         {language === "hi" ? "श्रेणी विवरण" : "Category Details"}
       </Text>
@@ -85,7 +88,7 @@ export default function CategoryDetailsScreen({ route, navigation }) {
       </Text>
 
       <Animated.View style={{ opacity: fadeAnim }}>
-        {/* ---------------- CARWASH ---------------- */}
+        {/* ---------- CARWASH ---------- */}
         {category === "carwash" && (
           <View style={{ marginTop: 10 }}>
             <Text style={styles.label}>
@@ -95,27 +98,25 @@ export default function CategoryDetailsScreen({ route, navigation }) {
             </Text>
 
             <TextInput
-              style={[styles.input, { height: 130, textAlignVertical: "top" }]}
+              style={[styles.input, styles.textArea]}
               multiline
               placeholder={
                 language === "hi"
                   ? "उदाहरण: 5+ साल का कारवॉश अनुभव"
                   : "Example: 5+ years of experience"
               }
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor="#FED7AA"
               value={expertise}
               onChangeText={setExpertise}
             />
           </View>
         )}
 
-        {/* ---------------- PICK & DROP ---------------- */}
+        {/* ---------- PICK & DROP ---------- */}
         {category === "pickdrop" && (
           <View style={{ marginTop: 10 }}>
             <Text style={styles.label}>
-              {language === "hi"
-                ? "अपनी गाड़ी चुनें"
-                : "Select your vehicle"}
+              {language === "hi" ? "अपनी गाड़ी चुनें" : "Select your vehicle"}
             </Text>
 
             {[
@@ -134,12 +135,12 @@ export default function CategoryDetailsScreen({ route, navigation }) {
                 <Ionicons
                   name={item.icon}
                   size={22}
-                  color={vehicle === item.key ? "#22D3EE" : "#94A3B8"}
+                  color={vehicle === item.key ? "#FDBA74" : "#FFE4C7"}
                 />
                 <Text
                   style={[
                     styles.cardText,
-                    vehicle === item.key && { color: "#22D3EE" },
+                    vehicle === item.key && { color: "#FDBA74" },
                   ]}
                 >
                   {item.label}
@@ -149,7 +150,7 @@ export default function CategoryDetailsScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* ---------------- DRIVER ---------------- */}
+        {/* ---------- DRIVER ---------- */}
         {category === "driver" && (
           <View style={{ marginTop: 10 }}>
             <Text style={styles.label}>
@@ -161,7 +162,7 @@ export default function CategoryDetailsScreen({ route, navigation }) {
             <TextInput
               style={styles.input}
               placeholder={language === "hi" ? "उदाहरण: 3" : "e.g. 3"}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor="#FED7AA"
               keyboardType="number-pad"
               value={experience}
               onChangeText={setExperience}
@@ -169,81 +170,80 @@ export default function CategoryDetailsScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* -------- NEXT BUTTON -------- */}
         <TouchableOpacity style={styles.button} onPress={next}>
           <Text style={styles.buttonText}>
             {language === "hi" ? "अगला" : "Next"}
           </Text>
         </TouchableOpacity>
       </Animated.View>
-    </View>
+    </LinearGradient>
   );
 }
 
-// --------------------- STYLES ----------------------
+// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0F172A",
     padding: 26,
     justifyContent: "center",
   },
 
   title: {
-    fontSize: 26,
-    color: "#22D3EE",
+    fontSize: 28,
+    color: "white",
     fontWeight: "800",
   },
 
   subtitle: {
-    color: "#94a3b8",
+    color: "#FFE4C7",
     marginBottom: 20,
     fontSize: 15,
   },
 
   label: {
-    color: "#E2E8F0",
+    color: "white",
     marginBottom: 10,
     fontSize: 16,
     fontWeight: "600",
   },
 
   input: {
-    backgroundColor: "#1E293B",
-    borderWidth: 1,
-    borderColor: "#334155",
+    backgroundColor: "rgba(255,255,255,0.15)",
     padding: 14,
     borderRadius: 12,
-    color: "#F1F5F9",
+    color: "white",
     fontSize: 16,
     marginBottom: 20,
+  },
+
+  textArea: {
+    height: 130,
+    textAlignVertical: "top",
   },
 
   vehicleCard: {
     flexDirection: "row",
     alignItems: "center",
     padding: 14,
-    borderWidth: 1,
-    borderColor: "#334155",
-    backgroundColor: "#1E293B",
     borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.15)",
     marginBottom: 12,
   },
 
   selectedCard: {
-    backgroundColor: "#243554",
-    borderColor: "#22D3EE",
+    borderWidth: 1,
+    borderColor: "#FDBA74",
   },
 
   cardText: {
     marginLeft: 12,
     fontSize: 16,
     fontWeight: "600",
-    color: "#CBD5E1",
+    color: "white",
   },
 
   button: {
-    backgroundColor: "#6366F1",
+    backgroundColor: "#EA580C",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",

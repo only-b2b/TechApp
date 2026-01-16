@@ -1,4 +1,3 @@
-// screens/BasicDetailsScreen.js
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -7,8 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
+  BackHandler,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function BasicDetailsScreen({ route, navigation }) {
   const { language, phone } = route.params;
@@ -25,7 +26,7 @@ export default function BasicDetailsScreen({ route, navigation }) {
     fadeAnim.setValue(0);
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 350,
+      duration: 300,
       useNativeDriver: true,
     }).start();
   }
@@ -34,20 +35,36 @@ export default function BasicDetailsScreen({ route, navigation }) {
     animate();
   }, []);
 
-  // ---------------- VALIDATION LOGIC ---------------- //
+  // 🔙 STEP-WISE BACK HANDLING
+  useEffect(() => {
+    const backAction = () => {
+      if (step > 1) {
+        setStep(step - 1);
+        animate();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [step]);
+
+  // ---------------- VALIDATION LOGIC ----------------
   function nextStep() {
-    // STEP 1 validation
     if (step === 1) {
       if (fullName.length < 3) return alert("Enter valid full name");
       if (!email.includes("@")) return alert("Enter valid email");
     }
 
-    // STEP 3 validation
     if (step === 3 && !area) {
       return alert("Enter your area / city");
     }
 
-    // If final step → pass payload
     if (step === 3) {
       return navigation.navigate("CategoryDetails", {
         language,
@@ -63,15 +80,17 @@ export default function BasicDetailsScreen({ route, navigation }) {
     animate();
   }
 
-  // ---------------- UI ---------------- //
   return (
-    <View style={styles.container}>
+    <LinearGradient
+       colors={["#f3b91aff", "#ee8941ff", "#e67d05ff"]}
+      style={styles.container}
+    >
       <Text style={styles.title}>Complete Your Profile</Text>
       <Text style={styles.subtitle}>
         Let’s collect the details we need to get you started
       </Text>
 
-      {/* ---------------- STEP 1 : NAME + EMAIL ---------------- */}
+      {/* STEP 1 */}
       {step === 1 && (
         <Animated.View style={{ opacity: fadeAnim }}>
           <Text style={styles.heading}>
@@ -79,23 +98,21 @@ export default function BasicDetailsScreen({ route, navigation }) {
           </Text>
 
           <Text style={styles.info}>
-            We use your name & email for verification and communication.
+            We use your name & email for verification.
           </Text>
 
-          {/* Full Name */}
           <TextInput
             style={styles.input}
             placeholder={language === "hi" ? "पूरा नाम" : "Full Name"}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#CBD5E1"
             value={fullName}
             onChangeText={setFullName}
           />
 
-          {/* Email */}
           <TextInput
             style={styles.input}
             placeholder="example@gmail.com"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#CBD5E1"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -110,15 +127,11 @@ export default function BasicDetailsScreen({ route, navigation }) {
         </Animated.View>
       )}
 
-      {/* ---------------- STEP 2 : CATEGORY ---------------- */}
+      {/* STEP 2 */}
       {step === 2 && (
         <Animated.View style={{ opacity: fadeAnim }}>
           <Text style={styles.heading}>
             {language === "hi" ? "आपका कार्य क्षेत्र चुनें" : "Choose your category"}
-          </Text>
-
-          <Text style={styles.info}>
-            Pick the type of service you want to offer to customers.
           </Text>
 
           {[
@@ -137,12 +150,12 @@ export default function BasicDetailsScreen({ route, navigation }) {
               <Ionicons
                 name={item.icon}
                 size={22}
-                color={category === item.key ? "#22D3EE" : "#94A3B8"}
+                color={category === item.key ? "#FDBA74" : "#E5E7EB"}
               />
               <Text
                 style={[
                   styles.categoryText,
-                  category === item.key && { color: "#22D3EE" },
+                  category === item.key && { color: "#FDBA74" },
                 ]}
               >
                 {item.label}
@@ -151,14 +164,12 @@ export default function BasicDetailsScreen({ route, navigation }) {
           ))}
 
           <TouchableOpacity style={styles.button} onPress={nextStep}>
-            <Text style={styles.buttonText}>
-              {language === "hi" ? "आगे बढ़ें" : "Next"}
-            </Text>
+            <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
 
-      {/* ---------------- STEP 3 : AREA ---------------- */}
+      {/* STEP 3 */}
       {step === 3 && (
         <Animated.View style={{ opacity: fadeAnim }}>
           <Text style={styles.heading}>
@@ -167,14 +178,10 @@ export default function BasicDetailsScreen({ route, navigation }) {
               : "Where do you want to earn?"}
           </Text>
 
-          <Text style={styles.info}>
-            Choose the area where you want to receive job requests.
-          </Text>
-
           <TextInput
             style={styles.input}
             placeholder="Pune, Wakad"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#CBD5E1"
             value={area}
             onChangeText={setArea}
           />
@@ -186,52 +193,48 @@ export default function BasicDetailsScreen({ route, navigation }) {
           </TouchableOpacity>
         </Animated.View>
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
-// --------------------- STYLES ----------------------
+// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0F172A",
     padding: 26,
     justifyContent: "center",
   },
 
   title: {
-    fontSize: 26,
-    color: "#22D3EE",
+    fontSize: 28,
+    color: "white",
     fontWeight: "800",
   },
 
   subtitle: {
-    color: "#94a3b8",
+    color: "#FFE4C7",
     marginBottom: 30,
     fontSize: 15,
   },
 
   heading: {
-    color: "#E2E8F0",
+    color: "white",
     fontSize: 20,
     marginBottom: 10,
     fontWeight: "700",
   },
 
   info: {
-    color: "#94a3b8",
+    color: "#FED7AA",
     marginBottom: 18,
-    lineHeight: 20,
     fontSize: 14,
   },
 
   input: {
-    backgroundColor: "#1E293B",
-    borderWidth: 1,
-    borderColor: "#334155",
+    backgroundColor: "rgba(255,255,255,0.15)",
     padding: 14,
     borderRadius: 12,
-    color: "#F1F5F9",
+    color: "white",
     fontSize: 16,
     marginBottom: 20,
   },
@@ -242,25 +245,23 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     borderRadius: 12,
-    borderWidth: 1,
-    backgroundColor: "#1E293B",
-    borderColor: "#334155",
+    backgroundColor: "rgba(255,255,255,0.12)",
   },
 
   categorySelected: {
-    backgroundColor: "#243554",
-    borderColor: "#22D3EE",
+    borderWidth: 1,
+    borderColor: "#FDBA74",
   },
 
   categoryText: {
     marginLeft: 10,
     fontSize: 16,
-    color: "#CBD5E1",
+    color: "white",
     fontWeight: "600",
   },
 
   button: {
-    backgroundColor: "#6366F1",
+    backgroundColor: "#EA580C",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",

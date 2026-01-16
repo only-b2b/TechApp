@@ -8,7 +8,7 @@
       ["expo-notifications"]
     ],
     "notification": {
-      "icon": "./assets/notification-icon.png"
+      "icon": "./assets/icon.png"
     },
     "android": {
       "package": "com.onlyb2b.motors.tech",

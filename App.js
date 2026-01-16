@@ -18,6 +18,8 @@ import ThankYouScreen from "./screens/ThankYouScreen";
 
 import LeadsScreen from "./screens/LeadsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import RequestsScreen from "./screens/RequestsScreen";
+import RequestDetailScreen from "./screens/RequestDetailScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -29,11 +31,11 @@ function AppTabs() {
         headerShown: false,
 
         tabBarShowLabel: true,
-        tabBarActiveTintColor: "#22D3EE",
-        tabBarInactiveTintColor: "#64748B",
+        tabBarActiveTintColor: "#ffffffff",
+        tabBarInactiveTintColor: "#a0a4a8ff",
 
         tabBarStyle: {
-          backgroundColor: "#1E293B",
+          backgroundColor: "#f5b134ff",
           position: "absolute",
           bottom: 20,
           marginHorizontal: 20,
@@ -78,6 +80,18 @@ function AppTabs() {
         name="Leads"
         component={LeadsScreen}
         options={{ title: "Leads" }}
+      />
+
+      <Tab.Screen
+        name="reques"
+        component={RequestsScreen}
+        options={{ title: "request" }}
+      />
+
+      <Tab.Screen
+        name="detail"
+        component={RequestDetailScreen}
+        options={{ title: "detail" }}
       />
 
       <Tab.Screen
