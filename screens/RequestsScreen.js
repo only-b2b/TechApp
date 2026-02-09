@@ -1,130 +1,113 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
-  StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
+  StyleSheet,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import { API_BASE_URL } from "../config";
+import { useAuth } from "../auth/AuthContext";
 
-const ORANGE = "#FF6B00";
-
-// ✅ use SAME value as your backend `service_type`
-const CATEGORY = "pickdrop"; // <-- change to "pickdrop" ONLY if DB has pickdrop
 
 export default function RequestsScreen({ navigation }) {
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const { tech } = useAuth(); // ✅ ADD
 
-  const fetchRequests = async () => {
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/orders/pending/list?category=${CATEGORY}`
-      );
+  const fetchOrders = async () => {
+    if (!tech) return;
 
-      // ✅ avoid JSON parse error if server returns HTML
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        console.log("Not JSON response:", text.slice(0, 80));
-        return;
-      }
-
-      setRequests(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.log("Fetch requests error:", err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    const res = await fetch(
+      `${API_BASE_URL}/orders/pending/list?category=${tech.category}`
+    );
+    const data = await res.json();
+    setOrders(data);
   };
 
-  // ✅ initial load + polling
+
   useEffect(() => {
-    fetchRequests();
-
-    const interval = setInterval(() => {
-      fetchRequests();
-    }, 4000); // every 4 sec
-
-    return () => clearInterval(interval);
+    fetchOrders();
+    const i = setInterval(fetchOrders, 5000);
+    return () => clearInterval(i);
   }, []);
 
-  // ✅ refresh whenever screen is opened/focused
-  useFocusEffect(
-    useCallback(() => {
-      fetchRequests();
-    }, [])
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        navigation.navigate("RequestDetailScreen", {
+          orderId: item.id,
+        })
+      }
+    >
+      <Text style={styles.price}>₹{item.price}</Text>
+      <Text style={styles.meta}>
+        {item.distance} • {item.duration}
+      </Text>
+
+      <View style={styles.badge}>
+        <Text style={styles.badgeText}>NEW</Text>
+      </View>
+    </TouchableOpacity>
   );
 
-  // ✅ pull-to-refresh
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchRequests();
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={ORANGE} />
-        <Text>Loading requests…</Text>
-      </View>
-    );
-  }
-
   return (
-    <FlatList
-      data={requests}
-      keyExtractor={(item) => item.id?.toString?.() ?? String(Math.random())}
-      contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            navigation.navigate("RequestDetailScreen", { order: item })
-          }
-        >
-          <Text style={styles.price}>₹{item.price}</Text>
-          <Text style={styles.meta}>
-            {item.distance || "-"} • {item.duration || "-"}
-          </Text>
-        </TouchableOpacity>
-      )}
-      ListEmptyComponent={
-        <View style={styles.center}>
-          <Text>No new requests</Text>
-        </View>
-      }
-    />
+    <View style={styles.container}>
+      <Text style={styles.header}>New Requests</Text>
+
+      <FlatList
+        data={orders}
+        keyExtractor={(o) => o.id.toString()}
+        renderItem={renderItem}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No new requests</Text>
+        }
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  card: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 16,
+  container: { flex: 1, backgroundColor: "#0F172A", padding: 16 },
+  header: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#F8FAFC",
     marginBottom: 12,
-    elevation: 3,
+  },
+  card: {
+    backgroundColor: "#1E293B",
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+    position: "relative",
   },
   price: {
     fontSize: 20,
-    fontWeight: "900",
-    color: ORANGE,
+    fontWeight: "700",
+    color: "#22D3EE",
   },
   meta: {
-    color: "#666",
+    color: "#CBD5E1",
     marginTop: 4,
+  },
+  badge: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "#22C55E",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  badgeText: {
+    color: "#022C22",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  empty: {
+    textAlign: "center",
+    color: "#94A3B8",
+    marginTop: 40,
   },
 });

@@ -1,36 +1,33 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import { API_BASE_URL } from "./config";
 
-// Foreground behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false
-  }),
-});
+export async function registerForPushNotificationsAsync() {
+  const { status } = await Notifications.getPermissionsAsync();
+  let finalStatus = status;
 
-export async function registerForPushAsync() {
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
+  if (status !== "granted") {
+    const res = await Notifications.requestPermissionsAsync();
+    finalStatus = res.status;
   }
+
   if (finalStatus !== "granted") {
-    throw new Error("Notification permission not granted");
+    alert("Permission denied");
+    return null;
   }
 
-  // IMPORTANT: In development builds, this returns a valid Expo push token
-  const projectId = (await Notifications.getExpoPushTokenAsync()).data;
+  const token = (await Notifications.getExpoPushTokenAsync()).data;
+  console.log("🔥 EXPO PUSH TOKEN:", token);
 
-  // Save to backend (userType='tech')
-  await fetch(`${API_BASE_URL}/push/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userType: "tech", userId: null, expoToken: projectId }),
-  });
+  if (Platform.OS === "android") {
+    await Notifications.setNotificationChannelAsync("requests", {
+      name: "Incoming Requests",
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 500, 500, 500],
+      sound: "default",
+      lockscreenVisibility:
+        Notifications.AndroidNotificationVisibility.PUBLIC,
+    });
+  }
 
-  return projectId;
+  return token;
 }
