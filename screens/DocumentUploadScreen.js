@@ -11,8 +11,9 @@ import {
   TextInput,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Ionicons } from "@expo/vector-icons";
+import Icon from "react-native-vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "../auth/AuthContext";
 
 import { DOC_RULES } from "../constants/docRules";
 import { API_BASE_URL } from "../config";
@@ -25,6 +26,7 @@ export default function DocumentUploadScreen({ route, navigation }) {
   const [files, setFiles] = useState({});
   const [inputs, setInputs] = useState({});
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { login } = useAuth();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -161,7 +163,7 @@ async function submitAll() {
     }
 
     // 6️⃣ SUCCESS
-    navigation.replace("ThankYou", { tech: techData });
+    await login(techData);   // ✅ persist
 
   } catch (err) {
     console.log("FINAL ERROR:", err);
@@ -221,7 +223,7 @@ async function submitAll() {
                     style={styles.previewImg}
                   />
                   <TouchableOpacity onPress={() => removeFile(rule.key)}>
-                    <Ionicons name="trash-outline" size={22} color="#EF4444" />
+                    <Icon name="trash-outline" size={22} color="#EF4444" />
                   </TouchableOpacity>
                 </View>
               )}

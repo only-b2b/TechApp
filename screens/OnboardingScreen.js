@@ -12,6 +12,7 @@ import {
 import GradientScreen from "../components/GradientScreen";
 import { generateTestOTP } from "../utils/otp";
 import { API_BASE_URL } from "../config";
+import { useAuth } from "../auth/AuthContext";
 
 export default function OnboardingScreen({ navigation }) {
   const [step, setStep] = useState(1);
@@ -19,6 +20,7 @@ export default function OnboardingScreen({ navigation }) {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("");
+  const { login } = useAuth();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -90,15 +92,16 @@ export default function OnboardingScreen({ navigation }) {
 
       // ✅ IF USER EXISTS → DIRECT LOGIN
       if (data.exists && data.tech) {
-        navigation.replace("ThankYou", { tech: data.tech });
+        await login(data.tech);
+        // Router will auto-navigate to AppTabs
+        return;
       }
+
       // ❌ IF NEW USER → CONTINUE REGISTRATION
-      else {
-        navigation.navigate("BasicDetails", {
-          language,
-          phone,
-        });
-      }
+      navigation.navigate("BasicDetails", {
+        language,
+        phone,
+      });
     } catch (err) {
       console.log("OTP LOGIN ERROR:", err);
       Alert.alert("Error", "Something went wrong. Try again.");

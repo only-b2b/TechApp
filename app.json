@@ -4,15 +4,79 @@
     "slug": "techapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "plugins": [
-      ["expo-notifications"]
-    ],
-    "notification": {
-      "icon": "./assets/icon.png"
+    "scheme": "techapp",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "package": "com.onlyb2b.motors.tech",
-      "googleServicesFile": "./android/app/google-services.json"
+      "versionCode": 1,
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FF6B00"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDbTEOzGx3L0pr6D1_9q8whfqhLyyyL-EI"
+        }
+      }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "We need your location to show nearby services and track rides",
+          "locationAlwaysPermission": "We need background location to track rides when app is closed",
+          "locationWhenInUsePermission": "We need your location to show nearby services"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "We need camera access to take pre and post wash photos",
+          "photosPermission": "We need access to your photos to upload vehicle images"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#FF6B00",
+          "sounds": ["./assets/sounds/ride_request.mp3"]
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
+    ],
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#FF6B00",
+      "androidMode": "default",
+      "androidCollapsedTitle": "New Ride Request"
+    },
+    "extra": {
+      "googleMapsApiKey": "AIzaSyDbTEOzGx3L0pr6D1_9q8whfqhLyyyL-EI",
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
     }
   }
 }

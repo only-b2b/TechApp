@@ -8,7 +8,7 @@ import {
   Animated,
   BackHandler,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Icon from "react-native-vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function BasicDetailsScreen({ route, navigation }) {
@@ -147,10 +147,10 @@ export default function BasicDetailsScreen({ route, navigation }) {
               ]}
               onPress={() => setCategory(item.key)}
             >
-              <Ionicons
+              <Icon  // ✅ Changed
                 name={item.icon}
                 size={22}
-                color={category === item.key ? "#FDBA74" : "#E5E7EB"}
+                color={category === item.key ? "#FDBA74" : "#FFE4C7"}
               />
               <Text
                 style={[

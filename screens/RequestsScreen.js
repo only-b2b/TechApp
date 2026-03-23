@@ -5,31 +5,47 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { API_BASE_URL } from "../config";
 import { useAuth } from "../auth/AuthContext";
 
-
 export default function RequestsScreen({ navigation }) {
   const [orders, setOrders] = useState([]);
-  const { tech } = useAuth(); // ✅ ADD
+  const [loading, setLoading] = useState(true);
+  const { tech } = useAuth();
 
   const fetchOrders = async () => {
-    if (!tech) return;
+    if (!tech?.id || !tech?.category) return; // ✅ Safety check
 
-    const res = await fetch(
-      `${API_BASE_URL}/orders/pending/list?category=${tech.category}`
-    );
-    const data = await res.json();
-    setOrders(data);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/orders/pending/list?category=${tech.category}&technician_id=${tech.id}`
+      );
+      const data = await res.json();
+      setOrders(data);
+    } catch (err) {
+      console.log("FETCH ORDERS ERROR:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-
   useEffect(() => {
+    if (!tech?.id) return; // ✅ Guard
+
     fetchOrders();
-    const i = setInterval(fetchOrders, 5000);
-    return () => clearInterval(i);
-  }, []);
+    const interval = setInterval(fetchOrders, 5000);
+    return () => clearInterval(interval);
+  }, [tech?.id, tech?.category]); // ✅ Dependencies
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#22D3EE" />
+      </View>
+    );
+  }
 
   const renderItem = ({ item }) => (
     <TouchableOpacity

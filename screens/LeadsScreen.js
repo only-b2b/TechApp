@@ -1,28 +1,44 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-native";
 import { API_BASE_URL } from "../config";
 import { useAuth } from "../auth/AuthContext";
 
 export default function LeadsScreen() {
   const [leads, setLeads] = useState([]);
-  const { tech } = useAuth(); // ✅ ADD
+  const [loading, setLoading] = useState(true);
+  const { tech } = useAuth();
 
   const fetchLeads = async () => {
-    if (!tech) return;
+    if (!tech?.id) return; // ✅ Add safety check
 
-    const res = await fetch(
-      `${API_BASE_URL}/orders/accepted/list?technician_id=${tech.id}`
-    );
-    const data = await res.json();
-    setLeads(data);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/orders/accepted/list?technician_id=${tech.id}`
+      );
+      const data = await res.json();
+      setLeads(data);
+    } catch (err) {
+      console.log("FETCH LEADS ERROR:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-
   useEffect(() => {
+    if (!tech?.id) return; // ✅ Guard clause
+
     fetchLeads();
-    const i = setInterval(fetchLeads, 5000);
-    return () => clearInterval(i);
-  }, []);
+    const interval = setInterval(fetchLeads, 5000);
+    return () => clearInterval(interval);
+  }, [tech?.id]); // ✅ Add dependency
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#22D3EE" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
