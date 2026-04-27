@@ -1,5 +1,3 @@
-// constants/docRules.js
-
 export const DOC_RULES = {
   carwash: [
     {
@@ -12,10 +10,9 @@ export const DOC_RULES = {
       key: "pan",
       label: "PAN Card",
       inputPlaceholder: "Enter PAN Number",
-      required: true,
+      required: false,
     },
   ],
-
   pickdrop: [
     {
       key: "aadhaar",
@@ -24,25 +21,18 @@ export const DOC_RULES = {
       required: true,
     },
     {
-      key: "pan",
-      label: "PAN Card",
-      inputPlaceholder: "Enter PAN Number",
+      key: "driving_license",
+      label: "Driving License",
+      inputPlaceholder: "Enter DL Number",
       required: true,
     },
     {
-      key: "dl",
-      label: "Driving Licence",
-      inputPlaceholder: "Enter Driving Licence Number",
+      key: "vehicle_rc",
+      label: "Vehicle RC",
+      inputPlaceholder: "Enter RC Number",
       required: true,
-    },
-    {
-      key: "rc",
-      label: "Vehicle RC Book (Optional)",
-      inputPlaceholder: "Enter Registration Number (Optional)",
-      required: false,
     },
   ],
-
   driver: [
     {
       key: "aadhaar",
@@ -51,21 +41,15 @@ export const DOC_RULES = {
       required: true,
     },
     {
+      key: "driving_license",
+      label: "Driving License",
+      inputPlaceholder: "Enter DL Number",
+      required: true,
+    },
+    {
       key: "pan",
       label: "PAN Card",
       inputPlaceholder: "Enter PAN Number",
-      required: true,
-    },
-    {
-      key: "dl",
-      label: "Driving Licence",
-      inputPlaceholder: "Enter Driving Licence Number",
-      required: true,
-    },
-    {
-      key: "rc",
-      label: "RC Book (Optional)",
-      inputPlaceholder: "Enter Registration Number (Optional)",
       required: false,
     },
   ],

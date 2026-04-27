@@ -1,4 +1,5 @@
-// screens/tabs/PendingRequestsTab.js
+// screens/tab/pendingRequestedtab.js
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -8,19 +9,25 @@ import {
   StyleSheet,
   RefreshControl,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";import { API_BASE_URL } from "../../config";
+import { Ionicons } from "@expo/vector-icons";
+import { API_BASE_URL } from "../../config";
 import { useAuth } from "../../auth/AuthContext";
 
 const COLORS = {
-  bg: "#0F172A",
-  card: "#1E293B",
-  primary: "#00A86B",
-  orange: "#FF6B00",
-  cyan: "#22D3EE",
-  text: "#F8FAFC",
-  subtext: "#94A3B8",
-  success: "#22C55E",
-  border: "#334155",
+  primary: "#000000",
+  white: "#FFFFFF",
+  dark: "#1F2937",
+  gray: "#6B7280",
+  lightGray: "#F3F4F6",
+  border: "#E5E7EB",
+  success: "#10B981",
+  successLight: "rgba(16, 185, 129, 0.1)",
+  error: "#EF4444",
+  warning: "#F59E0B",
+  blue: "#3B82F6",
+  blueLight: "rgba(59, 130, 246, 0.1)",
+  orange: "#F59E0B",
+  orangeLight: "rgba(245, 158, 11, 0.1)",
 };
 
 export default function PendingRequestsTab({ navigation }) {
@@ -55,73 +62,116 @@ export default function PendingRequestsTab({ navigation }) {
 
   const isCarWash = tech?.category === "carwash" || tech?.category === "car_wash";
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate("RequestDetailScreen", { orderId: item.id })}
-      activeOpacity={0.8}
-    >
-      {/* Badge */}
-      <View style={[styles.badge, { backgroundColor: isCarWash ? COLORS.primary : COLORS.orange }]}>
-        <Text style={styles.badgeText}>NEW</Text>
-      </View>
+  const getPaymentMethod = (item) => {
+    return item.payment_method || item.payment_mode || "cash";
+  };
 
-      {/* Header Row */}
-      <View style={styles.headerRow}>
-        <View style={[styles.iconBox, { backgroundColor: isCarWash ? COLORS.primary : COLORS.orange }]}>
-          <Icon 
-            name={isCarWash ? "water" : "car-sport"} 
-            size={22} 
-            color="#fff" 
-          />
-        </View>
-        <View style={styles.headerInfo}>
-          <Text style={styles.price}>₹{item.price}</Text>
-          <Text style={styles.meta}>{item.distance} • {item.duration}</Text>
-        </View>
-      </View>
+  const getCustomerTotal = (item) => {
+    return parseFloat(item.customer_total || item.price || 0);
+  };
 
-      {/* Vehicle Info (Car Wash) */}
-      {isCarWash && item.vehicle && (
-        <View style={styles.infoRow}>
-          <Icon name="car-outline" size={16} color={COLORS.subtext} />
-          <Text style={styles.infoText}>{item.vehicle}</Text>
-        </View>
-      )}
+  const renderItem = ({ item }) => {
+    const payMethod = getPaymentMethod(item);
+    const isCash = payMethod === "cash";
+    const customerTotal = getCustomerTotal(item);
 
-      {/* Location */}
-      <View style={styles.locationContainer}>
-        <View style={styles.locationRow}>
-          <View style={[styles.dot, { backgroundColor: COLORS.success }]} />
-          <Text style={styles.locationText} numberOfLines={1}>
-            {item.pickup_address || "Client location"}
-          </Text>
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate("RequestDetailScreen", { orderId: item.id })}
+        activeOpacity={0.7}
+      >
+        {/* New Badge */}
+        <View style={styles.newBadge}>
+          <Text style={styles.newBadgeText}>NEW</Text>
         </View>
-        
-        {!isCarWash && item.drop_address && (
-          <View style={styles.locationRow}>
-            <View style={[styles.dot, { backgroundColor: COLORS.orange }]} />
-            <Text style={styles.locationText} numberOfLines={1}>
-              {item.drop_address}
+
+        {/* Header */}
+        <View style={styles.cardHeader}>
+          <View style={styles.iconBox}>
+            <Ionicons
+              name={isCarWash ? "water-outline" : "car-sport-outline"}
+              size={22}
+              color={COLORS.dark}
+            />
+          </View>
+          <View style={styles.headerInfo}>
+            <Text style={styles.priceText}>₹{customerTotal}</Text>
+            <Text style={styles.metaText}>
+              {item.distance ? `${item.distance} km` : "—"} •{" "}
+              {item.duration ? `${item.duration} min` : "—"}
             </Text>
           </View>
-        )}
-      </View>
+        </View>
 
-      {/* Accept Arrow */}
-      <View style={styles.arrowContainer}>
-        <Text style={styles.viewText}>View Details</Text>
-        <Icon name="chevron-forward" size={18} color={COLORS.primary} />
-      </View>
-    </TouchableOpacity>
-  );
+        {/* Payment Badge */}
+        <View style={styles.paymentRow}>
+          <View style={[
+            styles.paymentBadge,
+            { backgroundColor: isCash ? COLORS.orangeLight : COLORS.blueLight }
+          ]}>
+            <Ionicons
+              name={isCash ? "cash-outline" : "phone-portrait-outline"}
+              size={14}
+              color={isCash ? COLORS.orange : COLORS.blue}
+            />
+            <Text style={[
+              styles.paymentBadgeText,
+              { color: isCash ? COLORS.orange : COLORS.blue }
+            ]}>
+              {isCash ? "CASH" : "ONLINE"}
+            </Text>
+          </View>
+          {item.client_name && (
+            <Text style={styles.clientNameSmall}>{item.client_name}</Text>
+          )}
+        </View>
+
+        {/* Vehicle Info */}
+        {isCarWash && item.vehicle && (
+          <View style={styles.vehicleBox}>
+            <Ionicons name="car-outline" size={16} color={COLORS.gray} />
+            <Text style={styles.vehicleText}>{item.vehicle}</Text>
+          </View>
+        )}
+
+        {/* Location */}
+        <View style={styles.locationSection}>
+          <View style={styles.locationRow}>
+            <View style={[styles.locationDot, { backgroundColor: COLORS.success }]} />
+            <Text style={styles.locationText} numberOfLines={1}>
+              {item.pickup_address || "Client location"}
+            </Text>
+          </View>
+
+          {!isCarWash && item.drop_address && (
+            <>
+              <View style={styles.locationLine} />
+              <View style={styles.locationRow}>
+                <View style={[styles.locationDot, { backgroundColor: COLORS.error }]} />
+                <Text style={styles.locationText} numberOfLines={1}>
+                  {item.drop_address}
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+
+        {/* Footer */}
+        <View style={styles.cardFooter}>
+          <Text style={styles.viewText}>View Details</Text>
+          <Ionicons name="chevron-forward" size={18} color={COLORS.dark} />
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>New Requests</Text>
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{orders.length}</Text>
+      <View style={styles.countHeader}>
+        <View style={styles.countLeft}>
+          <View style={[styles.countDot, { backgroundColor: COLORS.success }]} />
+          <Text style={styles.countText}>{orders.length} requests available</Text>
         </View>
       </View>
 
@@ -130,18 +180,21 @@ export default function PendingRequestsTab({ navigation }) {
         keyExtractor={(o) => o.id.toString()}
         renderItem={renderItem}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
+          <RefreshControl
+            refreshing={refreshing}
             onRefresh={onRefresh}
+            colors={[COLORS.primary]}
             tintColor={COLORS.primary}
           />
         }
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Icon name="hourglass-outline" size={48} color={COLORS.subtext} />
-            <Text style={styles.emptyText}>No new requests</Text>
-            <Text style={styles.emptySubtext}>Pull down to refresh</Text>
+          <View style={styles.emptyBox}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="hourglass-outline" size={40} color={COLORS.gray} />
+            </View>
+            <Text style={styles.emptyTitle}>No new requests</Text>
+            <Text style={styles.emptySubtitle}>Pull down to refresh</Text>
           </View>
         }
       />
@@ -150,142 +203,77 @@ export default function PendingRequestsTab({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-    paddingHorizontal: 16,
-    paddingTop: 16,
+  container: { flex: 1, backgroundColor: "#F9FAFB" },
+  countHeader: {
+    paddingHorizontal: 20, paddingVertical: 14,
+    backgroundColor: "#FFFFFF", borderBottomWidth: 1, borderBottomColor: COLORS.border,
+    flexDirection: "row", alignItems: "center",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: COLORS.text,
-  },
-  countBadge: {
-    marginLeft: 12,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  countText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 13,
-  },
+  countLeft: { flexDirection: "row", alignItems: "center" },
+  countDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
+  countText: { fontSize: 14, fontWeight: "600", color: COLORS.gray },
+  listContent: { padding: 16, paddingBottom: 100 },
+
   card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    backgroundColor: COLORS.white, borderRadius: 16, padding: 18,
+    marginBottom: 12, borderWidth: 1, borderColor: COLORS.border,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
-  badge: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+  newBadge: {
+    position: "absolute", top: 14, right: 14,
+    backgroundColor: COLORS.success,
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8,
   },
-  badgeText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 11,
-    letterSpacing: 0.5,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
+  newBadgeText: { color: COLORS.white, fontSize: 10, fontWeight: "700", letterSpacing: 0.5 },
+  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   iconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
+    width: 48, height: 48, borderRadius: 14, backgroundColor: COLORS.lightGray,
+    justifyContent: "center", alignItems: "center", marginRight: 14,
   },
-  headerInfo: {
-    flex: 1,
-  },
-  price: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: COLORS.cyan,
-  },
-  meta: {
-    color: COLORS.subtext,
-    fontSize: 13,
-    marginTop: 2,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    backgroundColor: COLORS.bg,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  infoText: {
-    color: COLORS.text,
-    marginLeft: 8,
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  locationContainer: {
+  headerInfo: { flex: 1 },
+  priceText: { fontSize: 22, fontWeight: "800", color: COLORS.dark },
+  metaText: { fontSize: 13, color: COLORS.gray, marginTop: 3 },
+
+  paymentRow: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     marginBottom: 12,
   },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
+  paymentBadge: {
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8,
   },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 10,
+  paymentBadgeText: { fontSize: 11, fontWeight: "700", marginLeft: 4 },
+  clientNameSmall: { fontSize: 13, fontWeight: "600", color: COLORS.dark },
+
+  vehicleBox: {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: COLORS.lightGray, paddingHorizontal: 14,
+    paddingVertical: 10, borderRadius: 10, marginBottom: 12,
   },
-  locationText: {
-    color: COLORS.text,
-    fontSize: 13,
-    flex: 1,
+  vehicleText: { fontSize: 14, fontWeight: "600", color: COLORS.dark, marginLeft: 10 },
+
+  locationSection: { marginBottom: 12 },
+  locationRow: { flexDirection: "row", alignItems: "center" },
+  locationDot: { width: 10, height: 10, borderRadius: 5, marginRight: 12 },
+  locationLine: {
+    width: 2, height: 20, backgroundColor: COLORS.border,
+    marginLeft: 4, marginVertical: 4,
   },
-  arrowContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+  locationText: { flex: 1, fontSize: 14, color: COLORS.dark },
+
+  cardFooter: {
+    flexDirection: "row", alignItems: "center", justifyContent: "flex-end",
+    paddingTop: 14, borderTopWidth: 1, borderTopColor: COLORS.lightGray,
   },
-  viewText: {
-    color: COLORS.primary,
-    fontWeight: "600",
-    marginRight: 4,
-    fontSize: 13,
+  viewText: { fontSize: 14, fontWeight: "600", color: COLORS.dark, marginRight: 4 },
+
+  emptyBox: { alignItems: "center", paddingTop: 80 },
+  emptyIcon: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: COLORS.lightGray, justifyContent: "center",
+    alignItems: "center", marginBottom: 16,
   },
-  emptyContainer: {
-    alignItems: "center",
-    paddingTop: 80,
-  },
-  emptyText: {
-    color: COLORS.text,
-    fontSize: 18,
-    fontWeight: "700",
-    marginTop: 16,
-  },
-  emptySubtext: {
-    color: COLORS.subtext,
-    marginTop: 4,
-  },
+  emptyTitle: { fontSize: 18, fontWeight: "700", color: COLORS.dark },
+  emptySubtitle: { fontSize: 14, color: COLORS.gray, marginTop: 6 },
 });

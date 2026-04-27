@@ -1,4 +1,5 @@
-// screens/tabs/AcceptedRequestsTab.js
+// screens/tab/acceptedRequestedtab.js
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -8,27 +9,32 @@ import {
   StyleSheet,
   RefreshControl,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import { Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../config";
 import { useAuth } from "../../auth/AuthContext";
 
 const COLORS = {
-  bg: "#0F172A",
-  card: "#1E293B",
-  primary: "#00A86B",
-  orange: "#FF6B00",
-  cyan: "#22D3EE",
-  text: "#F8FAFC",
-  subtext: "#94A3B8",
-  success: "#22C55E",
+  primary: "#000000",
+  white: "#FFFFFF",
+  dark: "#1F2937",
+  gray: "#6B7280",
+  lightGray: "#F3F4F6",
+  border: "#E5E7EB",
+  success: "#10B981",
+  successLight: "rgba(16, 185, 129, 0.1)",
+  error: "#EF4444",
   warning: "#F59E0B",
-  border: "#334155",
+  warningLight: "rgba(245, 158, 11, 0.1)",
+  blue: "#3B82F6",
+  blueLight: "rgba(59, 130, 246, 0.1)",
+  orange: "#F59E0B",
+  orangeLight: "rgba(245, 158, 11, 0.1)",
 };
 
 const STATUS_CONFIG = {
-  accepted: { label: "NAVIGATE", color: COLORS.primary, icon: "navigate" },
-  arrived: { label: "OTP PENDING", color: COLORS.warning, icon: "key" },
-  in_progress: { label: "IN PROGRESS", color: COLORS.orange, icon: "water" },
+  accepted: { label: "Navigate", color: COLORS.blue, icon: "navigate-outline", bg: COLORS.blueLight },
+  arrived: { label: "OTP Pending", color: COLORS.warning, icon: "key-outline", bg: COLORS.warningLight },
+  in_progress: { label: "In Progress", color: COLORS.success, icon: "play-outline", bg: COLORS.successLight },
 };
 
 export default function AcceptedRequestsTab({ navigation }) {
@@ -75,71 +81,105 @@ export default function AcceptedRequestsTab({ navigation }) {
     }
   };
 
+  const getPaymentMethod = (item) => {
+    return item.payment_method || item.payment_mode || "cash";
+  };
+
+  const getCustomerTotal = (item) => {
+    return parseFloat(item.customer_total || item.price || 0);
+  };
+
   const renderItem = ({ item }) => {
     const statusConfig = getStatusConfig(item.status);
+    const payMethod = getPaymentMethod(item);
+    const isCash = payMethod === "cash";
+    const customerTotal = getCustomerTotal(item);
 
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => handlePress(item)}
-        activeOpacity={0.8}
+        activeOpacity={0.7}
       >
         {/* Status Badge */}
-        <View style={[styles.badge, { backgroundColor: statusConfig.color }]}>
-          <Icon name={statusConfig.icon} size={12} color="#fff" style={{ marginRight: 4 }} />
-          <Text style={styles.badgeText}>{statusConfig.label}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: statusConfig.color }]}>
+          <Ionicons name={statusConfig.icon} size={12} color={COLORS.white} />
+          <Text style={styles.statusBadgeText}>{statusConfig.label}</Text>
         </View>
 
-        {/* Header Row */}
-        <View style={styles.headerRow}>
-          <View style={[styles.iconBox, { backgroundColor: isCarWash ? COLORS.primary : COLORS.orange }]}>
-            <Icon 
-              name={isCarWash ? "water" : "car-sport"} 
-              size={22} 
-              color="#fff" 
+        {/* Header */}
+        <View style={styles.cardHeader}>
+          <View style={[styles.iconBox, { backgroundColor: statusConfig.bg }]}>
+            <Ionicons
+              name={isCarWash ? "water" : "car-sport"}
+              size={22}
+              color={statusConfig.color}
             />
           </View>
           <View style={styles.headerInfo}>
             <Text style={styles.clientName}>
-              Client: {item.client_name || "Client"}
-              </Text>
-
-              <Text style={styles.techName}>
-              Tech: {item.technician_name || "You"}
+              {item.client_name || "Client"}
             </Text>
-            <Text style={styles.price}>₹{item.price}</Text>
+            <Text style={styles.priceText}>₹{customerTotal}</Text>
           </View>
         </View>
 
-        {/* Stats Row */}
+        {/* Stats */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Icon name="navigate-outline" size={16} color={COLORS.subtext} />
-            <Text style={styles.statText}>{item.distance || "—"}</Text>
+            <Ionicons name="location-outline" size={16} color={COLORS.gray} />
+            <Text style={styles.statText}>
+              {item.distance ? `${item.distance} km` : "—"}
+            </Text>
           </View>
           <View style={styles.statItem}>
-            <Icon name="time-outline" size={16} color={COLORS.subtext} />
-            <Text style={styles.statText}>{item.duration || "—"}</Text>
+            <Ionicons name="time-outline" size={16} color={COLORS.gray} />
+            <Text style={styles.statText}>
+              {item.duration ? `${item.duration} min` : "—"}
+            </Text>
           </View>
           {item.vehicle && (
             <View style={styles.statItem}>
-              <Icon name="car-outline" size={16} color={COLORS.subtext} />
+              <Ionicons name="car-outline" size={16} color={COLORS.gray} />
               <Text style={styles.statText}>{item.vehicle}</Text>
             </View>
           )}
         </View>
 
+        {/* Payment Info */}
+        <View style={styles.paymentRow}>
+          <View style={[
+            styles.paymentBadge,
+            { backgroundColor: isCash ? COLORS.orangeLight : COLORS.blueLight }
+          ]}>
+            <Ionicons
+              name={isCash ? "cash-outline" : "phone-portrait-outline"}
+              size={14}
+              color={isCash ? COLORS.orange : COLORS.blue}
+            />
+            <Text style={[
+              styles.paymentBadgeText,
+              { color: isCash ? COLORS.orange : COLORS.blue }
+            ]}>
+              {isCash ? "CASH" : "ONLINE"}
+            </Text>
+          </View>
+          {isCash && (
+            <Text style={styles.collectText}>Collect ₹{customerTotal}</Text>
+          )}
+        </View>
+
         {/* Action Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.actionBtn, { backgroundColor: statusConfig.color }]}
           onPress={() => handlePress(item)}
         >
-          <Text style={styles.actionText}>
+          <Text style={styles.actionBtnText}>
             {item.status === "accepted" && "Start Navigation"}
             {item.status === "arrived" && "Enter OTP"}
-            {item.status === "in_progress" && "Continue Wash"}
+            {item.status === "in_progress" && "Continue"}
           </Text>
-          <Icon name="arrow-forward" size={18} color="#fff" />
+          <Ionicons name="arrow-forward" size={18} color={COLORS.white} />
         </TouchableOpacity>
       </TouchableOpacity>
     );
@@ -147,13 +187,11 @@ export default function AcceptedRequestsTab({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Active Jobs</Text>
-        {leads.length > 0 && (
-          <View style={[styles.countBadge, { backgroundColor: COLORS.success }]}>
-            <Text style={styles.countText}>{leads.length}</Text>
-          </View>
-        )}
+      <View style={styles.countHeader}>
+        <View style={styles.countLeft}>
+          <View style={[styles.countDot, { backgroundColor: COLORS.success }]} />
+          <Text style={styles.countText}>{leads.length} active jobs</Text>
+        </View>
       </View>
 
       <FlatList
@@ -161,18 +199,21 @@ export default function AcceptedRequestsTab({ navigation }) {
         keyExtractor={(o) => o.id.toString()}
         renderItem={renderItem}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
+          <RefreshControl
+            refreshing={refreshing}
             onRefresh={onRefresh}
+            colors={[COLORS.primary]}
             tintColor={COLORS.primary}
           />
         }
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Icon name="checkmark-done-circle-outline" size={48} color={COLORS.subtext} />
-            <Text style={styles.emptyText}>No active jobs</Text>
-            <Text style={styles.emptySubtext}>Accept requests to get started</Text>
+          <View style={styles.emptyBox}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="checkmark-done-circle-outline" size={40} color={COLORS.gray} />
+            </View>
+            <Text style={styles.emptyTitle}>No active jobs</Text>
+            <Text style={styles.emptySubtitle}>Accept requests to get started</Text>
           </View>
         }
       />
@@ -181,131 +222,69 @@ export default function AcceptedRequestsTab({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-    paddingHorizontal: 16,
-    paddingTop: 16,
+  container: { flex: 1, backgroundColor: COLORS.lightGray },
+  countHeader: {
+    paddingHorizontal: 20, paddingVertical: 14,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: COLORS.text,
-  },
-  countBadge: {
-    marginLeft: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  techName: {
-    fontSize: 13,
-    color: COLORS.subtext,
-    marginTop: 2,
-  },
-  countText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 13,
-  },
+  countLeft: { flexDirection: "row", alignItems: "center" },
+  countDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
+  countText: { fontSize: 14, fontWeight: "600", color: COLORS.gray },
+  listContent: { padding: 16, paddingBottom: 100 },
+
   card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    backgroundColor: COLORS.white, borderRadius: 16, padding: 18,
+    marginBottom: 12, borderWidth: 1, borderColor: COLORS.border,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
-  badge: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+  statusBadge: {
+    position: "absolute", top: 14, right: 14,
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8,
   },
-  badgeText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 10,
-    letterSpacing: 0.5,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
+  statusBadgeText: { color: COLORS.white, fontSize: 11, fontWeight: "700", marginLeft: 4 },
+  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
   iconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
+    width: 48, height: 48, borderRadius: 14,
+    justifyContent: "center", alignItems: "center", marginRight: 14,
   },
-  headerInfo: {
-    flex: 1,
-  },
-  clientName: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-  price: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: COLORS.cyan,
-    marginTop: 2,
-  },
+  headerInfo: { flex: 1 },
+  clientName: { fontSize: 16, fontWeight: "700", color: COLORS.dark },
+  priceText: { fontSize: 22, fontWeight: "800", color: COLORS.dark, marginTop: 4 },
+
   statsRow: {
-    flexDirection: "row",
+    flexDirection: "row", marginBottom: 12, paddingBottom: 12,
+    borderBottomWidth: 1, borderBottomColor: COLORS.lightGray,
+  },
+  statItem: { flexDirection: "row", alignItems: "center", marginRight: 24 },
+  statText: { fontSize: 14, color: COLORS.dark, fontWeight: "500", marginLeft: 6 },
+
+  paymentRow: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     marginBottom: 14,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 20,
+  paymentBadge: {
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8,
   },
-  statText: {
-    color: COLORS.text,
-    marginLeft: 6,
-    fontSize: 13,
-  },
+  paymentBadgeText: { fontSize: 11, fontWeight: "700", marginLeft: 4 },
+  collectText: { fontSize: 12, fontWeight: "600", color: COLORS.orange },
+
   actionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 12,
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    paddingVertical: 14, borderRadius: 12,
   },
-  actionText: {
-    color: "#fff",
-    fontWeight: "700",
-    marginRight: 8,
-    fontSize: 15,
+  actionBtnText: { color: COLORS.white, fontSize: 15, fontWeight: "700", marginRight: 8 },
+
+  emptyBox: { alignItems: "center", paddingTop: 80 },
+  emptyIcon: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: COLORS.lightGray, justifyContent: "center",
+    alignItems: "center", marginBottom: 16,
   },
-  emptyContainer: {
-    alignItems: "center",
-    paddingTop: 80,
-  },
-  emptyText: {
-    color: COLORS.text,
-    fontSize: 18,
-    fontWeight: "700",
-    marginTop: 16,
-  },
-  emptySubtext: {
-    color: COLORS.subtext,
-    marginTop: 4,
-  },
+  emptyTitle: { fontSize: 18, fontWeight: "700", color: COLORS.dark },
+  emptySubtitle: { fontSize: 14, color: COLORS.gray, marginTop: 6 },
 });
